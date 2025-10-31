@@ -59,7 +59,7 @@ void stack_stats(const struct stack *s) {
     if (s == NULL) {
         return;
     }
-    fprintf(stderr, "'stats' %lu %lu %lu\n", s->pushes, s->pops, s->max_elements);
+    fprintf(stderr, "stats %lu %lu %lu\n", s->pushes, s->pops, s->max_elements);
 }
 
 /*
@@ -73,7 +73,7 @@ void stack_stats(const struct stack *s) {
  * -1 on failure.
  */
 static int stack_grow(struct stack *s) {
-    const size_t new_capacity = s->capacity == 0 ? 1 : s->capacity * 2;
+    const size_t new_capacity = s->capacity < 10 ? 20 : s->capacity * 2;
     int *new_memory = realloc(s->data, new_capacity * sizeof(int));
     if (new_memory == NULL) {
         return -1;

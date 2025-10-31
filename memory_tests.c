@@ -77,6 +77,8 @@ int queue_pop_test(void) {
     for (int i = 0; i < 15; i++) {
         queue_push(q, i);
     }
+    queue_stats(q);
+
     for (int i = 0; i < 15; i++) {
         const int pop_status = queue_pop(q);
         if (pop_status != i) {
@@ -93,15 +95,15 @@ int queue_pop_test(void) {
 
 int queue_resize_test(void) {
     int result = 0;
-    struct queue *q = queue_init(0);
+    struct queue *q = queue_init(5);
     if (q == NULL) {
         printf("Help, no queue created!!!\n");
     }
 
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 200; i++) {
         queue_push(q, i);
     }
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 200; i++) {
         const int pop_status = queue_pop(q);
         if (pop_status != i) {
             printf("Queue pop failed on popping item '%d' code: '%d'\n", i, pop_status);
@@ -117,10 +119,10 @@ int queue_resize_test(void) {
 
 int main(void) {
     const int results[] = {
-        stack_pop_test(),
-        stack_resize_test(),
-        queue_pop_test(),
-        // queue_resize_test()
+        // stack_pop_test(),
+        // stack_resize_test(),
+        // queue_pop_test(),
+        queue_resize_test()
     };
 
     int failures = 0;

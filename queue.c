@@ -7,9 +7,13 @@
  *
  * An implementation of the queue interface provided in stack.h
  *
- * The position of the head marks either the first non-empty element in the queue or the tail.
- * The position of the tail always marks the first empty element in the queue.
- * This queue will try to resize automatically if it's storage capacity is full.
+ * Features of this queue:
+ * > The position of the head marks either the first non-empty element in the queue or the tail.
+ * > The position of the tail always marks the first empty element in the queue.
+ * > This queue always needs 1 empty space in order to function properly
+ *   Not having this empty space would mean that, in case the head and tail index are the same,
+ *   The state of the queue would be ambiguous between completely full and completely empty.
+ * > This queue will try to resize automatically if it's storage capacity is full.
  */
 
 #include <stdio.h>
@@ -19,7 +23,6 @@
 
 #include <string.h>
 
-/* Handle to queue */
 struct queue {
     int *data;
     size_t head_index;
@@ -31,7 +34,8 @@ struct queue {
     size_t max_elements;
 };
 
-struct queue *queue_init(const size_t capacity) {
+struct queue *queue_init(size_t capacity) {
+    capacity++;
     struct queue *q = malloc(sizeof(struct queue));
     if (q == NULL) {
         return NULL;
@@ -67,7 +71,7 @@ void queue_stats(const struct queue *q) {
     if (q == NULL) {
         return;
     }
-    fprintf(stderr, "'stats' %lu %lu %lu\n", q->pushes, q->pops, q->max_elements);
+    fprintf(stderr, "stats %lu %lu %lu\n", q->pushes, q->pops, q->max_elements);
 }
 
 /*
@@ -82,7 +86,12 @@ void queue_stats(const struct queue *q) {
  * The next index.
  */
 static size_t next_index(const struct queue *q, const size_t current_index) {
-    return (current_index + 1) % q->capacity;
+    if (q->capacity == 0) {
+        return 0;
+    }
+
+    const size_t next_index = (current_index + 1) % q->capacity;
+    return next_index;
 }
 
 /*
@@ -101,7 +110,7 @@ static size_t next_index(const struct queue *q, const size_t current_index) {
  *       The most efficient use of our memory.
  */
 static int queue_resize(struct queue *q) {
-    const size_t new_size = q->capacity == 0 ? 1 : q->capacity * 2;
+    const size_t new_size = q->capacity < 10 ? 20 : q->capacity * 2;
 
     int *new_data = malloc(sizeof(int) * new_size);
     if (new_data == NULL) {
@@ -124,7 +133,7 @@ static int queue_resize(struct queue *q) {
         memcpy(new_data, &q->data[q->head_index], memory_part_1_size * sizeof(int));
 
         // The second part (from the start to the tail)
-        memcpy(&q->data[memory_part_1_size], q->data, q->tail_index * sizeof(int));
+        memcpy(&new_data[memory_part_1_size], q->data, q->tail_index * sizeof(int));
     }
 
     free(q->data);
@@ -135,23 +144,22 @@ static int queue_resize(struct queue *q) {
     return 0;
 }
 
-/* Push item the end of the queue.
- * Return 0 if successful, 1 otherwise. */
 int queue_push(struct queue *q, const int e) {
     if (q == NULL || q->data == NULL) {
         return 1;
     }
 
-    const size_t new_tail_index = next_index(q, q->tail_index);
-    // if (new_tail == q->head) {
-    //     if (queue_resize(q) == -1) {
-    //         return 1;
-    //     }
-    //
-    //     new_tail = next_position(q, q->tail_index);
-    // }
+    size_t new_tail_index = next_index(q, q->tail_index);
+    if (new_tail_index == q->head_index) {
+        if (queue_resize(q) == -1) {
+            return 1;
+        }
+
+        new_tail_index = next_index(q, q->tail_index);
+    }
 
     q->data[q->tail_index] = e;
+
     q->tail_index = new_tail_index;
 
     q->pushes++;

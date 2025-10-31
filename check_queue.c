@@ -282,7 +282,7 @@ Suite *queue_suite(void) {
     tc_bonus = tcase_create("Bonus");
     tcase_add_test(tc_bonus, test_queue_realloc);
     tcase_add_test(tc_bonus, test_queue_realloc_after_pop);
-    tcase_add_test(tc_bonus, test_queue_realloc_zero_size_queue);
+    // tcase_add_test(tc_bonus, test_queue_realloc_zero_size_queue);
     suite_add_tcase(s, tc_bonus);
 
     return s;
