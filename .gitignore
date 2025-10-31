@@ -1,10 +1,16 @@
 # ---> C
-# Ignore everything but .c, .h, .txt and .json files
-
+# Ignore everything
 *
+
+# Allow the following types:
+
+# folders
 !*/
+
+# c files
+!Makefile
 !*.c
 !*.h
+
+# Maze test files.
 !*.txt*
-!*.json
-!Makefile
