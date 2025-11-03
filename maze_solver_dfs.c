@@ -8,10 +8,10 @@
  * A depth first search algorithm for mazes.
  *
  * Crossroads are stored in a stack and used to store all the paths that need solving.
+ * We calculate the path length from the finish to the start.
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 
 #include "maze.h"
@@ -21,21 +21,25 @@
 #define ERROR (-2)
 
 /*
- * Recursively steps through the maze and handles all the heavy lifting needed to solve the maze.
+ * Perform one step towards solving the maze.
  *
  * Input:
  * m: pointer to the maze.
  * memory: The memory used to store possible paths while solving.
  *
  * Returns:
- * In case of an error, ERROR
- * In case no exit is found: NOT_FOUND
- * In case an exit is found: Maze index of last position before exit.
+ * In case of a successful step: 0
+ * In case of an error:          ERROR
+ * In case no exit is found:     NOT_FOUND
+ * In case an exit is found:     Maze index of last position before exit.
  *
  * Side Effects:
  * Writes characters (0, 1, 2, 3) to explored parts of the maze.
+ *
+ * Note:
+ * 0 is a save return value since the exit and start are always at least 1 block apart.
  */
-static int dfs_move(struct maze *m, struct stack *memory) {
+static int bfs_move(struct maze *m, struct stack *memory) {
     // If stack is empty return not found.
     const int stack_status = stack_empty(memory);
     if (stack_status == -1) {
@@ -80,6 +84,9 @@ static int dfs_move(struct maze *m, struct stack *memory) {
             maze_set(m, locations[i][0], locations[i][1], (char)('0' + i));
         }
     }
+
+    // Step completed successfully.
+    return 0;
 }
 
 /*
@@ -94,7 +101,7 @@ static int dfs_move(struct maze *m, struct stack *memory) {
  * Side effects:
  * Writes the characters 'x' on every cell from the start to the destination of the maze.
  */
-int dfs_determine_final_path(struct maze *m, int last_move_position) {
+int dfs_determine_final_path(struct maze *m, const int last_move_position) {
     int current_row = maze_row(m, last_move_position);
     int current_col = maze_col(m, last_move_position);
 
@@ -106,10 +113,10 @@ int dfs_determine_final_path(struct maze *m, int last_move_position) {
     // We calculate the path length from the finish to the start.
     // Path length is the amount of steps taken to stand on the start position.
 
-    // Since the last_move_position starts at 1 from the exit and the loop goes to 1 before start.
-    int path_length = 2;
+    // Since the last_move_position starts at 1 from the exit.
+    int path_length = 1;
 
-    while (!maze_at_destination(m, current_row, current_col)) {
+    while (!maze_at_start(m, current_row, current_col)) {
         const char direction = maze_get(m, current_row, current_col);
         maze_set(m, current_row, current_col, PATH);
         // Note that these directions are the inverse of what is used in dfs_move
@@ -125,6 +132,7 @@ int dfs_determine_final_path(struct maze *m, int last_move_position) {
                 break;
             case '3': // right
                 current_col++;
+                break;
             default:
                 return ERROR;
         }
@@ -140,8 +148,8 @@ int dfs_determine_final_path(struct maze *m, int last_move_position) {
  * Returns NOT_FOUND if no path is found and ERROR if an error occurred.
  */
 int dfs_solve(struct maze *m) {
-    // Create memory as either stack or queue
-    const int memory_estimate = maze_size(m);
+    // Create memory as stack.
+    const size_t memory_estimate = (size_t)maze_size(m);
     struct stack *memory = stack_init(memory_estimate);
 
     // Find the start of the maze and add it to memory.
@@ -155,9 +163,14 @@ int dfs_solve(struct maze *m) {
     stack_push(memory, start_location);
 
     // Recursively step through the maze and solve.
-    const int solving_status = dfs_move(m, memory);
+    int solving_status;
 
-    // Clean up the stack again.
+    // Keep stepping through the maze as long as there are no errors and the exit isn't found yet.
+    while ((solving_status = bfs_move(m, memory)) == 0) {
+        // void :)
+    }
+
+    // Clean up the stack, it's no longer needed.
     stack_cleanup(memory);
 
     if (solving_status == ERROR || solving_status == NOT_FOUND) {
