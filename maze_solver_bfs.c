@@ -1,3 +1,15 @@
+/*
+ * Created by snapshot112 on 03/11/2025
+ *
+ * Naam: Jeroen Boxhoorn
+ * UvAnetID: 16333969
+ * Studie: BSC Informatica
+ *
+ * A breadth first search algorithm for mazes.
+ *
+ * Crossroads are stored in a queue and used to store all the paths that need solving.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

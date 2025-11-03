@@ -63,7 +63,7 @@ maze_solver_bfs: maze_solver_bfs.o maze.o queue.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 clean:
-	rm -f *.o $(PROG) $(TESTS)
+	rm -f *.o *.tar.gz $(PROG) $(TESTS)
 
 tarball: maze_solver_submit.tar.gz
 
