@@ -171,8 +171,6 @@ int queue_push(struct queue *q, const int e) {
     return 0;
 }
 
-/* Remove the first item from queue and return it.
- * Return the first item if successful, -1 otherwise. */
 int queue_pop(struct queue *q) {
     if (q == NULL || q->data == NULL) {
         return -1;
